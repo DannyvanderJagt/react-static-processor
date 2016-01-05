@@ -42,9 +42,6 @@ var Config = {
       Log.error('We couldn\'t load the config file due to this error:', error.message);
       return;
     }
-
-    Log.mention('Loaded');
-
     next();
   }
 };

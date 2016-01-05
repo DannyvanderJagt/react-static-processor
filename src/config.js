@@ -10,7 +10,6 @@ let Config = {
   path: Path.join(process.cwd(), 'telescope.config.js'),
   data: {},
 
-
   load(next){
 
     // Check existance.
@@ -26,9 +25,6 @@ let Config = {
       Log.error('We couldn\'t load the config file due to this error:', error.message);
       return;
     }
-
-    Log.mention('Loaded');
-
     next();
   }
 }

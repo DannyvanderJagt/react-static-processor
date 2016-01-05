@@ -1,6 +1,10 @@
 import Path from 'path';
 import Fs from 'fs';
 import Cache from './cache';
+import Relations from './relations';
+import Pages from './pages';
+
+import Sass from 'node-sass';
 
 const Babel = require('babel-core');
 const BabelEs2015 = require('babel-preset-es2015');
@@ -13,47 +17,72 @@ let Log = Logger.level('UI');
 // Module.
 let UI = {
   path: Path.join(process.cwd(), 'ui'),
-  index:{},
-  components: [],
+  initialRead: false,
+  initialReadWaiter: undefined,
 
-  createIndex(next){
-    let components = Fs.readdirSync(UI.path);
-    let valid;
+  imports: [],
+  clearCache: [],
 
-    components = components.filter((component) => {
-      valid = UI.isValidComponent(Path.join(UI.path, component));
+  initialReadDone(){
+    UI.initialRead = true;
+    if(UI.initialReadWaiter){
+      let waiter = UI.initialReadWaiter;
+      UI.initialReadWaiter = undefined;
 
-      if(!valid){
-        Log.error('The component `'+component+'` is missing an index.js file!');
-      }
+      waiter();
+    }
+  },
 
-      return valid;
+  waitUntilInitialReadIsDone(next){
+    UI.initialReadWaiter = next;
+  },
+
+  getImports(){
+    return UI.imports.join('\n');
+  },
+
+  addImportStatement(name){
+    // Capitialize the first character for React.
+    let Uppercase = name[0].toUpperCase();
+    name = Uppercase + name.substring(1, name.length);
+    
+    let importStatement = `import ${name} from './ui/${name}';`;
+    let clearCache = `delete require.cache[require.resolve("./ui/${name}")];`;
+
+    if(UI.imports.indexOf(importStatement) === -1){
+      UI.imports.push(importStatement);
+    }
+    if(UI.clearCache.indexOf(clearCache) === -1){
+      UI.clearCache.push(clearCache);
+    }
+  },
+
+  compile(name){
+    UI.compileReactComponent(name);
+    UI.compileStylesheet(name);
+
+    UI.addImportStatement(name);
+
+    Log.mention('UI Component `'+name+'` is compiled!');
+
+    // Recompile pages that are using this ui component.
+    let relations = Relations.getUIRelations(name); 
+    
+    relations.forEach((page) => {
+      Pages.compile(page);
     });
-
-    Log.mention('Telescope found', components.length, 'UI component(s).');
-
-    UI.components = components;
-
-    next();
   },
 
-  isValidComponent(path){
-    return Fs.existsSync(Path.join(path, 'index.js'));
-  },
-
-  compileAll(next){
-    UI.components.forEach((component) => {
-      UI.compile(component);
-    });
-
-    next();
-  },
-
-  compile(name, next){
+  compileReactComponent(name){
     // Load the file.
     let path = Path.join(UI.path, name, 'index.js');
-    let file = Fs.readFileSync(path, 'utf-8');
 
+    if(!Fs.existsSync(path)){
+      Log.error('UI component does not have an index.js file!');
+      return false;
+    }
+
+    let file = Fs.readFileSync(path, 'utf-8');
 
     // Compile.
     let compiled = Babel.transform(file, {
@@ -62,8 +91,24 @@ let UI = {
 
     // Store in cache.
     Cache.store('ui/'+name, 'index.js', compiled.code);
-    
-    Log.mention('Component `'+name+'` is compiled!')
+  },
+
+  compileStylesheet(name){
+    let path = Path.join(UI.path, name, 'style.scss');
+
+    if(!Fs.existsSync(path)){
+      return false;
+    }
+
+    let file = Fs.readFileSync(path, 'utf-8');
+
+    // Compile.
+    let css = Sass.renderSync({
+      file: path
+    }).css.toString();
+
+    // Store in cache.
+    Cache.store('ui/'+name, 'style.css', css);
   }
 
 };

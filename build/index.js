@@ -1,5 +1,10 @@
 'use strict';
 
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+exports.Component = undefined;
+
 var _async = require('async');
 
 var _async2 = _interopRequireDefault(_async);
@@ -20,6 +25,18 @@ var _pages = require('./pages');
 
 var _pages2 = _interopRequireDefault(_pages);
 
+var _server = require('./server');
+
+var _server2 = _interopRequireDefault(_server);
+
+var _watcher = require('./watcher');
+
+var _watcher2 = _interopRequireDefault(_watcher);
+
+var _component = require('./component');
+
+var _component2 = _interopRequireDefault(_component);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -33,14 +50,28 @@ var Log = _logger2.default.level('Telescope');
 // Logging.
 Log.mention('Starting...');
 
-_async2.default.series([_config2.default.load, _cache2.default.create,
+_async2.default.series([_config2.default.load,
 
-// Ui components.
-_ui2.default.createIndex, _ui2.default.compileAll,
+// Watch ui components.
+_watcher2.default.watchUI,
 
-// Compile pages.
-_pages2.default.createIndex, _pages2.default.compileAll]);
+// Wait until all the ui components are compiled.
+_ui2.default.waitUntilInitialReadIsDone,
+
+// Watch pages.
+_watcher2.default.watchPages,
+
+// Wait until all the pages are compiled.
+_pages2.default.waitUntilInitialReadIsDone, _server2.default.start]);
+
+// Remove the cache on exit.
+process.on('SIGINT', function () {
+  process.exit();
+});
 
 process.on('exit', function () {
-  // Cache.destroy();
+  _cache2.default.destroy();
 });
+
+exports.default = {};
+exports.Component = _component2.default;

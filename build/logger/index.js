@@ -18,7 +18,9 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var Tags = {
   log: ['Log', 'green'],
   error: ['Error', 'red'],
-  mention: ['Mention', 'gray']
+  mention: ['Mention', 'gray'],
+  success: ['Success', 'green'],
+  alert: ['Alert', 'yellow']
 };
 
 exports.Tags = Tags;

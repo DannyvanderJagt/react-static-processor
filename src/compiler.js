@@ -1,0 +1,271 @@
+import Async from 'async';
+import Path from 'path';
+import Fs from 'fs-extra';
+import Uid from 'uid';
+import React from 'react';
+import ReactDom from 'react-dom/server';
+import Util from 'util';
+
+import Pages from './pages';
+import UI from './ui';
+import Runtime from './runtime';
+import Cache from './cache';
+import Relations from './relations';
+
+// Babel has to be load the old fashion way!
+const Babel = require('babel-core');
+const BabelEs2015 = require('babel-preset-es2015');
+const BabelReact = require('babel-preset-react');
+
+// Logging...
+import Logger from './logger';
+let Log = Logger.level('Pages');
+
+// Data for the page we are compiling.
+let LivePage = undefined;
+
+let Compiler = {
+  queue: [],
+  compile(name, cb){
+    Compiler.queue.push({name, cb});
+
+    if(LivePage === undefined){
+      Compiler.execute();
+    }
+  },
+
+  abort(error){
+    Log.error(LivePage.name, 'stopped compiling due to this error: ', error);
+  },
+
+  execute(){
+    if(Compiler.queue.length === 0){ 
+      return;
+    }
+
+    LivePage = undefined;
+
+    // Copy over the data.
+    LivePage = Compiler.queue.pop();
+
+    Async.series([
+      Compiler.exists,
+      Compiler.getContent,
+      Compiler.addReactWrapper,
+
+      Compiler.compileReact,
+      Compiler.renderReactToHtml,
+      Compiler.removeEmptyElements,
+
+      Compiler.storeUsedUIComponents,
+
+      Compiler.compileStylesheets,
+
+      Compiler.createHeadTag,
+
+      Compiler.compileIntoHtmlPage,
+
+      // Store the file.
+      Compiler.store
+    ], () => {
+      Log.success('Compiled page ', LivePage.name);
+
+      LivePage = undefined;
+      Compiler.execute();
+    });
+  },
+
+  // Compiler methods...
+  
+  // Check if the page really exists.
+  exists(next){
+    let name = LivePage.name;
+    let path = Path.join(Pages.path, name) + '.tmpl';
+
+    if(!Fs.existsSync(path)){
+      Compiler.abort('The .tmpl file does not exist!');
+      return;
+    }
+
+    LivePage.path = path;
+
+    next();
+  },
+
+  getContent(next){
+    try{
+      LivePage.content = Fs.readFileSync(LivePage.path, 'utf-8');
+    }catch(error){
+      Compiler.abort('The file could not be loaded!')
+    }
+
+    next();
+  },
+  
+  addReactWrapper(next){
+    let imports = UI.getImports();
+    let clearCache = UI.clearCache.join('\n');
+
+    // Note: Indentation is not a point here
+    // the outputed file will be only be used by this module.
+    let wrapper = `
+
+      ${clearCache}
+      import React from 'react';
+      import Config from '${Path.join(__dirname, 'ui/config')}';
+      ${imports}
+    
+      class Page extends React.Component{
+        render(){
+          return (<div>${LivePage.content}</div>);
+        }
+      };
+
+      module.exports = Page;
+    `;
+
+    LivePage.content = wrapper;
+
+    next();
+  },
+
+  // Compile all the react code to es5.
+  compileReact(next){
+    LivePage.content = Babel.transform(LivePage.content, {
+      presets: [BabelEs2015, BabelReact]
+    }).code;
+    next();
+  },
+
+  renderReactToHtml(next){
+    let tempFilename = Uid() + '.tmp';
+
+    // Store the content in a temporary file.
+    let path = Cache.store(undefined, tempFilename, LivePage.content);
+
+    // Reload the content from the temporary file.
+    // We write the content to a file and required it here
+    // to execute the code and keep the original context.
+    let Page; // React Page component.
+    try{
+      Page = require(path);
+    }catch(error){
+      Log.error('React could not be rendered due to: ');
+      console.log(error);
+      console.log(error.stack);
+      return;
+    }
+    // Remove the temporary file.
+    Cache.remove(undefined, tempFilename);
+
+    // Create the react Element from the Page component.
+    let element;
+    try{
+      element = React.createElement(Page);
+    }catch(error){
+      Log.error('React could not create an element of your page: ');
+      console.log(error);
+      return;
+    }
+
+    // Render the element into static html.
+    let html;
+    try{
+      html = ReactDom.renderToStaticMarkup(element);
+    }catch(error){
+      Log.error('React could not render the page into static html: ');
+      console.log(error);
+      return;
+    }
+
+    // Remove the unnecessary react wrapper div.
+    html = html.substr(5,html.length-5);
+    
+    LivePage.content = html;
+
+    next();
+  },
+
+  // Used to fix a React issue internally.
+  // See: https://github.com/facebook/react/issues/4550
+  // Removes: <telescope-empty-element></telescope-empty-element>
+  removeEmptyElements(next){
+    LivePage.content = LivePage.content.replace(/<telescope-empty-element><\/telescope-empty-element>/g, '');
+    next();
+  },
+
+  storeUsedUIComponents(next){
+    Relations.setPageComponents(LivePage.name, Runtime.components);
+    next();
+  },
+
+  compileStylesheets(next){
+    let content = LivePage.content;
+    let stylesheets = [];
+    let path;
+
+    Runtime.components.forEach((component) => {
+      path = Path.join(process.cwd(), '.cache/ui', component, 'style.css');
+      if(!Fs.existsSync(path)){
+        return;
+      }
+
+      stylesheets.push(
+        Fs.readFileSync(path, 'utf-8')
+      );
+    });
+
+    LivePage.stylesheet = stylesheets.join('');
+
+    next();
+  },
+
+  createHeadTag(next){
+    let data = Runtime.data;
+
+    let head = [
+      '<title>' + data.title + '</title>',
+      "\n<link href='./style.css' rel='stylesheet' />",
+    ].join('');
+
+    LivePage.head = head;
+
+    next();
+  },
+
+  compileIntoHtmlPage(next){
+    // Add the html wrapper.
+    let endfile = [
+      '<html>',
+      '\n\t<head>',
+      '\n\t',
+      LivePage.head,
+      '\n\t</head>',
+      '\n\t\t<body>',
+      '\n\t\t\t',
+      LivePage.content,
+      "<script src=\"http://localhost:35729/livereload.js?snipver=1\"></script>",
+      '\n\t\t</body>',
+      '\n</html>'
+    ].join('')
+  
+    LivePage.content = endfile;
+
+    next();
+  },
+
+  store(next){
+    let path = Path.join(process.cwd(), 'dist', LivePage.name);
+
+    Fs.mkdirsSync(path);
+
+    Fs.writeFileSync(Path.join(path, 'index.html'), LivePage.content);
+    Fs.writeFileSync(Path.join(path, 'style.css'), LivePage.stylesheet);
+
+    next();
+  }
+  
+  
+};
+
+export default Compiler;

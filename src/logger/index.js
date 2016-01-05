@@ -4,7 +4,9 @@ import Level from './level'
 let Tags = {
   log: ['Log', 'green'],
   error: ['Error', 'red'],
-  mention: ['Mention', 'gray']
+  mention: ['Mention', 'gray'],
+  success: ['Success', 'green'],
+  alert: ['Alert', 'yellow']
 };
 
 export {Tags};

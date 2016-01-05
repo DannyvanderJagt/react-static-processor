@@ -9,18 +9,6 @@ let Log = Logger.level('Cache');
 let Cache = {
   path: Path.join(process.cwd(), '.cache'),
   
-  create(next){
-    if(Fs.existsSync(Cache.path)){
-      Cache.destroy();
-    }
-
-    Log.mention('created...');
-
-    Fs.mkdirsSync(Cache.path);
-
-    if(next){ next(); }
-  },
-
   destroy(next){
     Fs.removeSync(Cache.path);
 

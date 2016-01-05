@@ -16,6 +16,18 @@ var _cache = require('./cache');
 
 var _cache2 = _interopRequireDefault(_cache);
 
+var _relations = require('./relations');
+
+var _relations2 = _interopRequireDefault(_relations);
+
+var _pages = require('./pages');
+
+var _pages2 = _interopRequireDefault(_pages);
+
+var _nodeSass = require('node-sass');
+
+var _nodeSass2 = _interopRequireDefault(_nodeSass);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -33,42 +45,66 @@ var Log = _logger2.default.level('UI');
 // Module.
 var UI = {
   path: _path2.default.join(process.cwd(), 'ui'),
-  index: {},
-  components: [],
+  initialRead: false,
+  initialReadWaiter: undefined,
 
-  createIndex: function createIndex(next) {
-    var components = _fs2.default.readdirSync(UI.path);
-    var valid = undefined;
+  imports: [],
+  clearCache: [],
 
-    components = components.filter(function (component) {
-      valid = UI.isValidComponent(_path2.default.join(UI.path, component));
+  initialReadDone: function initialReadDone() {
+    UI.initialRead = true;
+    if (UI.initialReadWaiter) {
+      var waiter = UI.initialReadWaiter;
+      UI.initialReadWaiter = undefined;
 
-      if (!valid) {
-        Log.error('The component `' + component + '` is missing an index.js file!');
-      }
+      waiter();
+    }
+  },
+  waitUntilInitialReadIsDone: function waitUntilInitialReadIsDone(next) {
+    UI.initialReadWaiter = next;
+  },
+  getImports: function getImports() {
+    return UI.imports.join('\n');
+  },
+  addImportStatement: function addImportStatement(name) {
+    // Capitialize the first character for React.
+    var Uppercase = name[0].toUpperCase();
+    name = Uppercase + name.substring(1, name.length);
 
-      return valid;
+    var importStatement = 'import ' + name + ' from \'./ui/' + name + '\';';
+    var clearCache = 'delete require.cache[require.resolve("./ui/' + name + '")];';
+
+    if (UI.imports.indexOf(importStatement) === -1) {
+      UI.imports.push(importStatement);
+    }
+    if (UI.clearCache.indexOf(clearCache) === -1) {
+      UI.clearCache.push(clearCache);
+    }
+  },
+  compile: function compile(name) {
+    UI.compileReactComponent(name);
+    UI.compileStylesheet(name);
+
+    UI.addImportStatement(name);
+
+    Log.mention('UI Component `' + name + '` is compiled!');
+
+    // Recompile pages that are using this ui component.
+    var relations = _relations2.default.getUIRelations(name);
+
+    relations.forEach(function (page) {
+      _pages2.default.compile(page);
     });
-
-    Log.mention('Telescope found', components.length, 'UI component(s).');
-
-    UI.components = components;
-
-    next();
   },
-  isValidComponent: function isValidComponent(path) {
-    return _fs2.default.existsSync(_path2.default.join(path, 'index.js'));
-  },
-  compileAll: function compileAll(next) {
-    UI.components.forEach(function (component) {
-      UI.compile(component);
-    });
-
-    next();
-  },
-  compile: function compile(name, next) {
+  compileReactComponent: function compileReactComponent(name) {
     // Load the file.
     var path = _path2.default.join(UI.path, name, 'index.js');
+
+    if (!_fs2.default.existsSync(path)) {
+      Log.error('UI component does not have an index.js file!');
+      return false;
+    }
+
     var file = _fs2.default.readFileSync(path, 'utf-8');
 
     // Compile.
@@ -78,8 +114,23 @@ var UI = {
 
     // Store in cache.
     _cache2.default.store('ui/' + name, 'index.js', compiled.code);
+  },
+  compileStylesheet: function compileStylesheet(name) {
+    var path = _path2.default.join(UI.path, name, 'style.scss');
 
-    Log.mention('Component `' + name + '` is compiled!');
+    if (!_fs2.default.existsSync(path)) {
+      return false;
+    }
+
+    var file = _fs2.default.readFileSync(path, 'utf-8');
+
+    // Compile.
+    var css = _nodeSass2.default.renderSync({
+      file: path
+    }).css.toString();
+
+    // Store in cache.
+    _cache2.default.store('ui/' + name, 'style.css', css);
   }
 };
 

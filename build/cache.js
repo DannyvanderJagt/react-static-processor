@@ -26,19 +26,6 @@ var Log = _logger2.default.level('Cache');
 var Cache = {
   path: _path2.default.join(process.cwd(), '.cache'),
 
-  create: function create(next) {
-    if (_fsExtra2.default.existsSync(Cache.path)) {
-      Cache.destroy();
-    }
-
-    Log.mention('created...');
-
-    _fsExtra2.default.mkdirsSync(Cache.path);
-
-    if (next) {
-      next();
-    }
-  },
   destroy: function destroy(next) {
     _fsExtra2.default.removeSync(Cache.path);
 
