@@ -32,6 +32,8 @@ var Telescope = {
   start(){  
     Async.series([
       welcome,
+
+      Config.load,
         
       // The /ui and /pages directory are required!
       UI.exists,
@@ -49,6 +51,9 @@ var Telescope = {
       // Wait until all the pages are compiled.
       Pages.waitUntilInitialReadIsDone,
       
+      Watcher.watchConfig,
+      Watcher.watchConfigStylesheets,
+
       Server.start
     ]);
   },

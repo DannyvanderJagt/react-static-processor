@@ -5,6 +5,7 @@ import Uid from 'uid';
 import React from 'react';
 import ReactDom from 'react-dom/server';
 import Util from 'util';
+import Sass from 'node-sass';
 
 import Pages from './pages';
 import UI from './ui';
@@ -12,6 +13,7 @@ import Runtime from './runtime';
 import Cache from './cache';
 import Relations from './relations';
 import Dist from './dist';
+import Config from './config';
 
 // Babel has to be load the old fashion way!
 const Babel = require('babel-core');
@@ -210,6 +212,34 @@ let Compiler = {
     let stylesheets = [];
     let path;
 
+    // Read config.
+    if(Config.data.stylesheets && Util.isArray(Config.data.stylesheets)){
+
+      Config.data.stylesheets.forEach((path) => {
+        path = Path.join(path);
+        if(!Fs.existsSync(path)){
+          return;
+        }
+
+        if(Path.extname() === '.scss'){
+          try{
+            stylesheets.push(
+              Sass.renderSync({
+                file: path
+              }).css.toString()
+            )
+          }catch(error){
+            Compiler.abort(error);
+          }
+          return;
+        }
+
+        stylesheets.push(
+          Fs.readFileSync(path, 'utf-8')
+        );
+      })
+    }
+
     Runtime.components.forEach((component) => {
       path = Path.join(process.cwd(), '.cache/ui', component, 'style.css');
       if(!Fs.existsSync(path)){
@@ -233,6 +263,10 @@ let Compiler = {
       '<title>' + data.title + '</title>',
       "\n<link href='./style.css' rel='stylesheet' />",
     ].join('');
+
+    if(Config.data.head){
+      head = head.concat(Config.data.head);
+    }
 
     LivePage.head = head;
 

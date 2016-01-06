@@ -32,6 +32,10 @@ var _util = require('util');
 
 var _util2 = _interopRequireDefault(_util);
 
+var _nodeSass = require('node-sass');
+
+var _nodeSass2 = _interopRequireDefault(_nodeSass);
+
 var _pages = require('./pages');
 
 var _pages2 = _interopRequireDefault(_pages);
@@ -55,6 +59,10 @@ var _relations2 = _interopRequireDefault(_relations);
 var _dist = require('./dist');
 
 var _dist2 = _interopRequireDefault(_dist);
+
+var _config = require('./config');
+
+var _config2 = _interopRequireDefault(_config);
 
 var _logger = require('./logger');
 
@@ -222,6 +230,30 @@ var Compiler = {
     var stylesheets = [];
     var path = undefined;
 
+    // Read config.
+    if (_config2.default.data.stylesheets && _util2.default.isArray(_config2.default.data.stylesheets)) {
+
+      _config2.default.data.stylesheets.forEach(function (path) {
+        path = _path2.default.join(path);
+        if (!_fsExtra2.default.existsSync(path)) {
+          return;
+        }
+
+        if (_path2.default.extname() === '.scss') {
+          try {
+            stylesheets.push(_nodeSass2.default.renderSync({
+              file: path
+            }).css.toString());
+          } catch (error) {
+            Compiler.abort(error);
+          }
+          return;
+        }
+
+        stylesheets.push(_fsExtra2.default.readFileSync(path, 'utf-8'));
+      });
+    }
+
     _runtime2.default.components.forEach(function (component) {
       path = _path2.default.join(process.cwd(), '.cache/ui', component, 'style.css');
       if (!_fsExtra2.default.existsSync(path)) {
@@ -239,6 +271,10 @@ var Compiler = {
     var data = _runtime2.default.data;
 
     var head = ['<title>' + data.title + '</title>', "\n<link href='./style.css' rel='stylesheet' />"].join('');
+
+    if (_config2.default.data.head) {
+      head = head.concat(_config2.default.data.head);
+    }
 
     LivePage.head = head;
 

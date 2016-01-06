@@ -66,7 +66,7 @@ var leave = function leave() {
 var Telescope = {
   Component: Component,
   start: function start() {
-    _async2.default.series([welcome,
+    _async2.default.series([welcome, _config2.default.load,
 
     // The /ui and /pages directory are required!
     _ui2.default.exists, _pages2.default.exists,
@@ -81,7 +81,7 @@ var Telescope = {
     _watcher2.default.watchPages,
 
     // Wait until all the pages are compiled.
-    _pages2.default.waitUntilInitialReadIsDone, _server2.default.start]);
+    _pages2.default.waitUntilInitialReadIsDone, _watcher2.default.watchConfig, _watcher2.default.watchConfigStylesheets, _server2.default.start]);
   },
   stop: function stop() {
     process.exit();

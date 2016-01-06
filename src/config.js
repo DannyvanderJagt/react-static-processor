@@ -14,7 +14,6 @@ let Config = {
 
     // Check existance.
     if(!Fs.existsSync(Config.path)){
-      Log.error('The config file can\'t be found!');
       return;
     }
 
@@ -25,6 +24,9 @@ let Config = {
       Log.error('We couldn\'t load the config file due to this error:', error.message);
       return;
     }
+
+    Log.success('The telescope.config.js is loaded!');
+
     next();
   }
 }

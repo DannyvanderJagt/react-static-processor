@@ -3,6 +3,7 @@ import Pages from './pages';
 import UI from './ui';
 import Path from 'path';
 import Util from 'util';
+import Config from './config';
 
 import Logger from './logger';
 let Log = Logger.level('Watcher');
@@ -11,7 +12,7 @@ let Watcher = {
 
   // UI.
   watchUI(next){
-    Chokidar.watch('ui/**/*.*', {
+    Watcher.ui = Chokidar.watch('ui/**/*.*', {
       ignoreInitial: false, 
       cwd: process.cwd(), 
       ignored: /[\/\\]\./
@@ -22,6 +23,12 @@ let Watcher = {
 
     if(next && Util.isFunction(next)){
       next();
+    }
+  },
+
+  unwatchUI(){
+    if(Watcher.ui && Watcher.ui.stop){
+      Watcher.ui.stop();
     }
   },
 
@@ -56,7 +63,7 @@ let Watcher = {
 
   // Pages.
   watchPages(next){
-    Chokidar.watch('pages/*.*', {
+    Watcher.pages = Chokidar.watch('pages/*.*', {
       ignoreInitial: false, 
       cwd: process.cwd(), 
       ignored: /[\/\\]\./
@@ -68,6 +75,12 @@ let Watcher = {
 
     if(next && Util.isFunction(next)){
       next();
+    }
+  },
+
+  unwatchPages(){
+    if(Watcher.pages && Watcher.pages.stop){
+      Watcher.pages.stop();
     }
   },
 
@@ -96,7 +109,58 @@ let Watcher = {
     }
 
     Pages.compile(componentName);
-  }
+  },
+
+  watchConfig(next){
+    Watcher.config = Chokidar.watch('telescope.config.js', {
+      ignoreInitial: true, 
+      cwd: process.cwd(), 
+      ignored: /[\/\\]\./
+    })
+    .on('all', Watcher.onConfig);
+
+
+    if(next && Util.isFunction(next)){
+      next();
+    }
+  },
+
+  unWatchConfig(){
+    if(Watcher.config && Watcher.config.close){
+      Watcher.config.stop();
+    }
+  },
+
+  // Callback events.
+  onConfig(event, path){
+    Config.load();
+
+    Watcher.unwatchPages();
+    Watcher.watchPages();
+  },
+
+  watchConfigStylesheets(next){
+    if(!Config.data.stylesheets){ next(); return; }
+    if(!Util.isArray(Config.data.stylesheets)){ next(); return; }
+
+    Watcher.configStylesheets = Chokidar.watch(Config.data.stylesheets, {
+      ignoreInitial: true, 
+      cwd: process.cwd(), 
+      ignored: /[\/\\]\./
+    })
+    .on('all', Watcher.onConfigStylesheets);
+
+    if(next && Util.isFunction(next)){
+      next();
+    }
+  },
+
+  onConfigStylesheets(event, path){
+    Watcher.unwatchPages();
+    Watcher.watchPages();
+  },
+
+
 
 };
 

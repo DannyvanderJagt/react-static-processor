@@ -31,7 +31,6 @@ var Config = {
 
     // Check existance.
     if (!_fs2.default.existsSync(Config.path)) {
-      Log.error('The config file can\'t be found!');
       return;
     }
 
@@ -42,6 +41,9 @@ var Config = {
       Log.error('We couldn\'t load the config file due to this error:', error.message);
       return;
     }
+
+    Log.success('The telescope.config.js is loaded!');
+
     next();
   }
 };

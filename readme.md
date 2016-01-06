@@ -14,6 +14,14 @@ I wanted to write plain html and still use React Component for rendering. This a
 ## Usage
 Run `telescope` (at root)
 
+## Config
+* Create `telescope.config.js`
+
+Fields: 
+
+* `stylesheets` - Array - Add stylesheets to your page.
+* `head` - Array - Add html in string format, this is added to each page in the head tag.
+
 ## Create a page
 - Create a file with the `.tmpl` extention and place it in the `pages` directory.
 - Write some html and use React Components.

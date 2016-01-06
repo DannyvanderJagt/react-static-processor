@@ -24,6 +24,10 @@ var _util = require('util');
 
 var _util2 = _interopRequireDefault(_util);
 
+var _config = require('./config');
+
+var _config2 = _interopRequireDefault(_config);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -37,7 +41,7 @@ var Watcher = {
   // UI.
 
   watchUI: function watchUI(next) {
-    _chokidar2.default.watch('ui/**/*.*', {
+    Watcher.ui = _chokidar2.default.watch('ui/**/*.*', {
       ignoreInitial: false,
       cwd: process.cwd(),
       ignored: /[\/\\]\./
@@ -45,6 +49,11 @@ var Watcher = {
 
     if (next && _util2.default.isFunction(next)) {
       next();
+    }
+  },
+  unwatchUI: function unwatchUI() {
+    if (Watcher.ui && Watcher.ui.stop) {
+      Watcher.ui.stop();
     }
   },
 
@@ -81,7 +90,7 @@ var Watcher = {
 
   // Pages.
   watchPages: function watchPages(next) {
-    _chokidar2.default.watch('pages/*.*', {
+    Watcher.pages = _chokidar2.default.watch('pages/*.*', {
       ignoreInitial: false,
       cwd: process.cwd(),
       ignored: /[\/\\]\./
@@ -89,6 +98,11 @@ var Watcher = {
 
     if (next && _util2.default.isFunction(next)) {
       next();
+    }
+  },
+  unwatchPages: function unwatchPages() {
+    if (Watcher.pages && Watcher.pages.stop) {
+      Watcher.pages.stop();
     }
   },
 
@@ -118,6 +132,52 @@ var Watcher = {
     }
 
     _pages2.default.compile(componentName);
+  },
+  watchConfig: function watchConfig(next) {
+    Watcher.config = _chokidar2.default.watch('telescope.config.js', {
+      ignoreInitial: true,
+      cwd: process.cwd(),
+      ignored: /[\/\\]\./
+    }).on('all', Watcher.onConfig);
+
+    if (next && _util2.default.isFunction(next)) {
+      next();
+    }
+  },
+  unWatchConfig: function unWatchConfig() {
+    if (Watcher.config && Watcher.config.close) {
+      Watcher.config.stop();
+    }
+  },
+
+  // Callback events.
+  onConfig: function onConfig(event, path) {
+    _config2.default.load();
+
+    Watcher.unwatchPages();
+    Watcher.watchPages();
+  },
+  watchConfigStylesheets: function watchConfigStylesheets(next) {
+    if (!_config2.default.data.stylesheets) {
+      next();return;
+    }
+    if (!_util2.default.isArray(_config2.default.data.stylesheets)) {
+      next();return;
+    }
+
+    Watcher.configStylesheets = _chokidar2.default.watch(_config2.default.data.stylesheets, {
+      ignoreInitial: true,
+      cwd: process.cwd(),
+      ignored: /[\/\\]\./
+    }).on('all', Watcher.onConfigStylesheets);
+
+    if (next && _util2.default.isFunction(next)) {
+      next();
+    }
+  },
+  onConfigStylesheets: function onConfigStylesheets(event, path) {
+    Watcher.unwatchPages();
+    Watcher.watchPages();
   }
 };
 
