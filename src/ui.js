@@ -122,9 +122,15 @@ let UI = {
     let file = Fs.readFileSync(path, 'utf-8');
 
     // Compile.
-    let compiled = Babel.transform(file, {
-      presets: [BabelEs2015, BabelReact]
-    });
+    let compiled;
+    try{
+      compiled = Babel.transform(file, {
+        presets: [BabelEs2015, BabelReact]
+      });
+    }catch(error){
+      Log.error('Could not compile the .js file of UI component:', name, 'due to:', error); 
+      return;
+    }
 
     // Store in cache.
     Cache.store(Path.join('ui',name,'index.js') , compiled.code);
@@ -140,10 +146,16 @@ let UI = {
     let file = Fs.readFileSync(path, 'utf-8');
 
     // Compile.
-    let css = Sass.renderSync({
-      file: path
-    }).css.toString();
-
+    let css;
+    try{
+      css = Sass.renderSync({
+        file: path
+      }).css.toString();
+    }catch(error){
+      Log.error('Could not compile the .scss file of UI component:', name, 'due to:', error); 
+      return;
+    }
+    
     // Store in cache.
     Cache.store(Path.join('ui',name, 'style.css'), css);
   }

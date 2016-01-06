@@ -150,9 +150,15 @@ var UI = {
     var file = _fs2.default.readFileSync(path, 'utf-8');
 
     // Compile.
-    var compiled = Babel.transform(file, {
-      presets: [BabelEs2015, BabelReact]
-    });
+    var compiled = undefined;
+    try {
+      compiled = Babel.transform(file, {
+        presets: [BabelEs2015, BabelReact]
+      });
+    } catch (error) {
+      Log.error('Could not compile the .js file of UI component:', name, 'due to:', error);
+      return;
+    }
 
     // Store in cache.
     _cache2.default.store(_path2.default.join('ui', name, 'index.js'), compiled.code);
@@ -167,9 +173,15 @@ var UI = {
     var file = _fs2.default.readFileSync(path, 'utf-8');
 
     // Compile.
-    var css = _nodeSass2.default.renderSync({
-      file: path
-    }).css.toString();
+    var css = undefined;
+    try {
+      css = _nodeSass2.default.renderSync({
+        file: path
+      }).css.toString();
+    } catch (error) {
+      Log.error('Could not compile the .scss file of UI component:', name, 'due to:', error);
+      return;
+    }
 
     // Store in cache.
     _cache2.default.store(_path2.default.join('ui', name, 'style.css'), css);

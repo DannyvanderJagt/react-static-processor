@@ -147,9 +147,14 @@ var Compiler = {
 
   // Compile all the react code to es5.
   compileReact: function compileReact(next) {
-    LivePage.content = Babel.transform(LivePage.content, {
-      presets: [BabelEs2015, BabelReact]
-    }).code;
+    try {
+      LivePage.content = Babel.transform(LivePage.content, {
+        presets: [BabelEs2015, BabelReact]
+      }).code;
+    } catch (error) {
+      Compiler.abort(error);
+      return;
+    }
     next();
   },
   renderReactToHtml: function renderReactToHtml(next) {
@@ -194,7 +199,7 @@ var Compiler = {
     }
 
     // Remove the unnecessary react wrapper div.
-    html = html.substr(5, html.length - 5);
+    html = html.substr(5, html.length - 11);
 
     LivePage.content = html;
 
