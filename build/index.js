@@ -1,4 +1,3 @@
-#! /usr/bin/env node
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -92,5 +91,11 @@ process.on('exit', function () {
   leave();
 });
 
+// Support import es2015.
 exports.default = Telescope;
+exports.Component = _component2.default;
+
+// Support require es5.
+
+module.exports = Telescope;
 exports.Component = _component2.default;

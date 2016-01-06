@@ -1,4 +1,3 @@
-#! /usr/bin/env node
 import Async from 'async';
 import UI from './ui';
 import Config from './config';
@@ -57,5 +56,10 @@ process.on('exit', () => {
   leave();
 });
 
+// Support import es2015.
 export default Telescope;
 export {Component};
+
+// Support require es5.
+module.exports = Telescope;
+exports.Component = Component;

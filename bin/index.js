@@ -1,2 +1,3 @@
-import Telescope from '../build';
-
+#! /usr/bin/env node
+var Telescope = require('../build/index.js');
+Telescope.start();
