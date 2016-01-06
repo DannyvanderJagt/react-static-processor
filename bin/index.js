@@ -1,0 +1,2 @@
+import Telescope from '../build';
+

@@ -24,26 +24,28 @@ var leave = () => {
   Log.note(`Have an awesome day!`);
 };
 
+var Telescope = {
+  start(){  
+    Async.series([
+      welcome,
+      // Config.load,
+      
+      // Watch ui components.
+      Watcher.watchUI,
 
-Async.series([
-  welcome,
-  // Config.load,
-  
-  // Watch ui components.
-  Watcher.watchUI,
+      // Wait until all the ui components are compiled.
+      UI.waitUntilInitialReadIsDone,
 
-  // Wait until all the ui components are compiled.
-  UI.waitUntilInitialReadIsDone,
+      // Watch pages.
+      Watcher.watchPages,
 
-  // Watch pages.
-  Watcher.watchPages,
-
-  // Wait until all the pages are compiled.
-  Pages.waitUntilInitialReadIsDone,
-  
-  Server.start
-]);
-
+      // Wait until all the pages are compiled.
+      Pages.waitUntilInitialReadIsDone,
+      
+      Server.start
+    ]);
+  }
+};
 
 // Remove the cache on exit.
 process.on('SIGINT', () => {
@@ -55,5 +57,5 @@ process.on('exit', () => {
   leave();
 });
 
-export default {};
+export default Telescope;
 export {Component};

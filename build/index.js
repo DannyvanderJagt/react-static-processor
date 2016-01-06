@@ -63,20 +63,24 @@ var leave = function leave() {
   Log.note('Have an awesome day!');
 };
 
-_async2.default.series([welcome,
-// Config.load,
+var Telescope = {
+  start: function start() {
+    _async2.default.series([welcome,
+    // Config.load,
 
-// Watch ui components.
-_watcher2.default.watchUI,
+    // Watch ui components.
+    _watcher2.default.watchUI,
 
-// Wait until all the ui components are compiled.
-_ui2.default.waitUntilInitialReadIsDone,
+    // Wait until all the ui components are compiled.
+    _ui2.default.waitUntilInitialReadIsDone,
 
-// Watch pages.
-_watcher2.default.watchPages,
+    // Watch pages.
+    _watcher2.default.watchPages,
 
-// Wait until all the pages are compiled.
-_pages2.default.waitUntilInitialReadIsDone, _server2.default.start]);
+    // Wait until all the pages are compiled.
+    _pages2.default.waitUntilInitialReadIsDone, _server2.default.start]);
+  }
+};
 
 // Remove the cache on exit.
 process.on('SIGINT', function () {
@@ -88,5 +92,5 @@ process.on('exit', function () {
   leave();
 });
 
-exports.default = {};
+exports.default = Telescope;
 exports.Component = _component2.default;
