@@ -14,6 +14,7 @@ import Async from 'async';
 import Compiler from './compiler';
 import Relations from './relations';
 import Dist from './dist';
+import Telescope from './index';
 
 // Logging...
 import Logger from './logger';
@@ -25,6 +26,15 @@ let Pages = {
   
   initialRead: false,
   initialReadWaiter: undefined,
+
+  exists(next){
+    if(!Fs.existsSync(Pages.path)){
+      Log.error('Please create a pages directory at:', Pages.path);
+      Telescope.stop();
+      return;
+    }
+    next();
+  },
 
   initialReadDone(){
     Pages.initialRead = true;

@@ -24,6 +24,10 @@ var _pages = require('./pages');
 
 var _pages2 = _interopRequireDefault(_pages);
 
+var _index = require('./index');
+
+var _index2 = _interopRequireDefault(_index);
+
 var _nodeSass = require('node-sass');
 
 var _nodeSass2 = _interopRequireDefault(_nodeSass);
@@ -51,6 +55,14 @@ var UI = {
   imports: [],
   clearCache: [],
 
+  exists: function exists(next) {
+    if (!_fs2.default.existsSync(UI.path)) {
+      Log.error('Please create a ui directory at:', UI.path);
+      _index2.default.stop();
+      return;
+    }
+    next();
+  },
   initialReadDone: function initialReadDone() {
     UI.initialRead = true;
     if (UI.initialReadWaiter) {

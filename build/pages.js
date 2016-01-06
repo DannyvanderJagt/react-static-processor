@@ -60,6 +60,10 @@ var _dist = require('./dist');
 
 var _dist2 = _interopRequireDefault(_dist);
 
+var _index = require('./index');
+
+var _index2 = _interopRequireDefault(_index);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -76,6 +80,14 @@ var Pages = {
   initialRead: false,
   initialReadWaiter: undefined,
 
+  exists: function exists(next) {
+    if (!_fsExtra2.default.existsSync(Pages.path)) {
+      Log.error('Please create a pages directory at:', Pages.path);
+      _index2.default.stop();
+      return;
+    }
+    next();
+  },
   initialReadDone: function initialReadDone() {
     Pages.initialRead = true;
 

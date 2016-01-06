@@ -67,7 +67,9 @@ var Telescope = {
   Component: Component,
   start: function start() {
     _async2.default.series([welcome,
-    // Config.load,
+
+    // The /ui and /pages directory are required!
+    _ui2.default.exists, _pages2.default.exists,
 
     // Watch ui components.
     _watcher2.default.watchUI,
@@ -80,6 +82,9 @@ var Telescope = {
 
     // Wait until all the pages are compiled.
     _pages2.default.waitUntilInitialReadIsDone, _server2.default.start]);
+  },
+  stop: function stop() {
+    process.exit();
   }
 };
 

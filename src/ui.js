@@ -3,6 +3,7 @@ import Fs from 'fs';
 import Cache from './cache';
 import Relations from './relations';
 import Pages from './pages';
+import Telescope from './index';
 
 import Sass from 'node-sass';
 
@@ -22,6 +23,15 @@ let UI = {
 
   imports: [],
   clearCache: [],
+
+  exists(next){
+    if(!Fs.existsSync(UI.path)){
+      Log.error('Please create a ui directory at:', UI.path);
+      Telescope.stop();
+      return;
+    }
+    next();
+  },
 
   initialReadDone(){
     UI.initialRead = true;

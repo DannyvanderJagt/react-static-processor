@@ -32,8 +32,11 @@ var Telescope = {
   start(){  
     Async.series([
       welcome,
-      // Config.load,
-      
+        
+      // The /ui and /pages directory are required!
+      UI.exists,
+      Pages.exists,
+
       // Watch ui components.
       Watcher.watchUI,
 
@@ -48,6 +51,9 @@ var Telescope = {
       
       Server.start
     ]);
+  },
+  stop(){
+    process.exit();
   }
 };
 
