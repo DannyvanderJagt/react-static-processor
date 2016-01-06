@@ -52,9 +52,12 @@ var Server = {
     Server.app.use((0, _serveIndex2.default)(path, { 'icons': true }));
 
     // Config.
-    if (_config2.default.data.server && _util2.default.isArray(_config2.default.data.server)) {
-      _config2.default.data.server.forEach(function (path) {
-        Server.app.use(_express2.default.static(path));
+    if (_config2.default.data.server && _util2.default.isObject(_config2.default.data.server)) {
+      var keys = Object.keys(_config2.default.data.server);
+
+      keys.forEach(function (key) {
+        console.log(key, _config2.default.data.server[key]);
+        Server.app.use(key, _express2.default.static(_config2.default.data.server[key]));
       });
     }
 

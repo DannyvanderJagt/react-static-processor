@@ -21,7 +21,7 @@ Fields:
 
 * `stylesheets` - Array - Add stylesheets to your page.
 * `head` - Array - Add html in string format, this is added to each page in the head tag.
-* `server` - Array - Add paths for hosting. Uses `express.static`
+* `server` - Object - Add paths for hosting. Format: {'/assets': 'path/to/assets'}
 
 ## Create a page
 - Create a file with the `.tmpl` extention and place it in the `pages` directory.

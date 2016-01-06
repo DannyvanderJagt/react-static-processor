@@ -24,9 +24,12 @@ let Server = {
     Server.app.use(ServeIndex(path, {'icons': true}));
 
     // Config.
-    if(Config.data.server && Util.isArray(Config.data.server)){
-      Config.data.server.forEach((path) => {
-        Server.app.use(Express.static(path));
+    if(Config.data.server && Util.isObject(Config.data.server)){
+      let keys = Object.keys(Config.data.server);
+      
+      keys.forEach((key) => {
+        console.log(key, Config.data.server[key]);
+        Server.app.use(key, Express.static(Config.data.server[key]));
       });
     }
 
