@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 import Async from 'async';
 import UI from './ui';
 import Config from './config';
@@ -6,17 +7,27 @@ import Pages from './pages';
 import Server from './server';
 import Watcher from './watcher';
 import Component from './component';
+import Pkg from '../package.json';
 
 // Logging.
 import Logger from './logger';
 let Log = Logger.level('Telescope');
 
-// Compile all the UI elements.
-Log.mention('Starting...');
+// Welcome message
+var welcome = (next) => {
+  Log.note('Welcome!')
+  next();
+};
+
+var leave = () => {
+  Log.note(`Thank you for using Telescope.`);
+  Log.note(`Have an awesome day!`);
+};
 
 
 Async.series([
-  Config.load,
+  welcome,
+  // Config.load,
   
   // Watch ui components.
   Watcher.watchUI,
@@ -29,10 +40,10 @@ Async.series([
 
   // Wait until all the pages are compiled.
   Pages.waitUntilInitialReadIsDone,
-
+  
   Server.start
-
 ]);
+
 
 // Remove the cache on exit.
 process.on('SIGINT', () => {
@@ -41,6 +52,7 @@ process.on('SIGINT', () => {
 
 process.on('exit', () => {
   Cache.destroy();
+  leave();
 });
 
 export default {};

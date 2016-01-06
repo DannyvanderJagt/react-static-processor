@@ -16,24 +16,52 @@ let Cache = {
 
     if(next){ next(); }
   },
+  store(path, content){
+    let dirPath;
+    let filePath;
 
-  store(path, filename, content){
-    if(!path){ path = ''};
-    path = Path.join(Cache.path, path);
-    Fs.mkdirsSync(path);
+    if(Path.extname(path)){
+      let parts = path.split('/');
+      dirPath = parts.slice(0, parts.length -1).join('/');
+      dirPath = Path.join(Cache.path, dirPath);
+      filePath = Path.join(Cache.path, path);
+    }else{
+      Log.error('Can not write due to path error: ', path);
+      return;
+    }
 
-    path = Path.join(path, filename);
+    Fs.mkdirsSync(dirPath);
 
-    Fs.writeFileSync(path, content);
-    return path;
+    Fs.writeFileSync(filePath, content);
+    return filePath;
   },
 
-  remove(path, filename){
-    if(!path){ path = ''};
-    path = Path.join(Cache.path, path, filename);
-    Fs.unlinkSync(path);
-    return path;
+  // store(path, filename, content){
+  //   if(!path){ path = ''};
+  //   path = Path.join(Cache.path, path);
+  //   Fs.mkdirsSync(path);
+
+  //   path = Path.join(path, filename);
+
+  //   Fs.writeFileSync(path, content);
+  //   return path;
+  // },
+  remove(path){
+    path = Path.join(Cache.path, path);
+
+    if(Path.extname(path)){
+      Fs.unlinkSync(path);
+      return;
+    }
+    
+    Fs.remove(path);
   }
+  // remove(path, filename){
+  //   if(!path){ path = ''};
+  //   path = Path.join(Cache.path, path, filename);
+  //   Fs.unlinkSync(path);
+  //   return path;
+  // }
 
 };
 

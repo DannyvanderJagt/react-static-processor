@@ -2,9 +2,7 @@ import Fs from 'fs-extra';
 import Path from 'path';
 import Config from './config';
 
-import Gulp from 'gulp';
 import Through from 'through2';
-import GulpBabel from 'gulp-babel';
 import React from 'react';
 import ReactDom from 'react-dom/server';
 import Uid from 'uid';
@@ -14,6 +12,8 @@ import Sass from 'node-sass';
 import Async from 'async';
 
 import Compiler from './compiler';
+import Relations from './relations';
+import Dist from './dist';
 
 // Logging...
 import Logger from './logger';
@@ -37,13 +37,20 @@ let Pages = {
     }
   },
 
+  removePage(name){
+    Relations.removePage(name);
+    
+    Dist.remove(name);
+
+    Log.mention('Page `' + name + '` is removed!');
+  },
+
   waitUntilInitialReadIsDone(next){
     Pages.initialReadWaiter = next;
   },
 
   compile(name){
     Compiler.compile(name);
-    Log.mention('Compiling page: ', name);
   }
 
 

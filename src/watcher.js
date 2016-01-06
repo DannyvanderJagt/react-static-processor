@@ -45,6 +45,12 @@ let Watcher = {
     if(!arrPath[1]){ return; }
 
     let componentName = arrPath[1];
+    
+    if(event === 'unlink' && Path.extname(path) === '.js'){
+      UI.removeComponent(componentName);
+      return;
+    }
+
     UI.compile(componentName);
   },
 
@@ -83,6 +89,11 @@ let Watcher = {
 
     // Remove the extention.
     componentName = componentName.replace('.tmpl', '');
+
+    if(event === 'unlink'){
+      Pages.removePage(componentName);
+      return;
+    }
 
     Pages.compile(componentName);
   }

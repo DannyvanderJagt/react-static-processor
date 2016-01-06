@@ -35,26 +35,53 @@ var Cache = {
       next();
     }
   },
-  store: function store(path, filename, content) {
-    if (!path) {
-      path = '';
-    };
-    path = _path2.default.join(Cache.path, path);
-    _fsExtra2.default.mkdirsSync(path);
+  store: function store(path, content) {
+    var dirPath = undefined;
+    var filePath = undefined;
 
-    path = _path2.default.join(path, filename);
+    if (_path2.default.extname(path)) {
+      var parts = path.split('/');
+      dirPath = parts.slice(0, parts.length - 1).join('/');
+      dirPath = _path2.default.join(Cache.path, dirPath);
+      filePath = _path2.default.join(Cache.path, path);
+    } else {
+      Log.error('Can not write due to path error: ', path);
+      return;
+    }
 
-    _fsExtra2.default.writeFileSync(path, content);
-    return path;
+    _fsExtra2.default.mkdirsSync(dirPath);
+
+    _fsExtra2.default.writeFileSync(filePath, content);
+    return filePath;
   },
-  remove: function remove(path, filename) {
-    if (!path) {
-      path = '';
-    };
-    path = _path2.default.join(Cache.path, path, filename);
-    _fsExtra2.default.unlinkSync(path);
-    return path;
+
+  // store(path, filename, content){
+  //   if(!path){ path = ''};
+  //   path = Path.join(Cache.path, path);
+  //   Fs.mkdirsSync(path);
+
+  //   path = Path.join(path, filename);
+
+  //   Fs.writeFileSync(path, content);
+  //   return path;
+  // },
+  remove: function remove(path) {
+    path = _path2.default.join(Cache.path, path);
+
+    if (_path2.default.extname(path)) {
+      _fsExtra2.default.unlinkSync(path);
+      return;
+    }
+
+    _fsExtra2.default.remove(path);
   }
+  // remove(path, filename){
+  //   if(!path){ path = ''};
+  //   path = Path.join(Cache.path, path, filename);
+  //   Fs.unlinkSync(path);
+  //   return path;
+  // }
+
 };
 
 exports.default = Cache;

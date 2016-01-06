@@ -63,16 +63,29 @@ var UI = {
   waitUntilInitialReadIsDone: function waitUntilInitialReadIsDone(next) {
     UI.initialReadWaiter = next;
   },
+  removeComponent: function removeComponent(name) {
+    UI.removeImportStatement(name);
+    _relations2.default.removeUIComponent(name);
+
+    _cache2.default.remove('ui/' + name);
+
+    Log.success('UI component `' + name + '` is removed!');
+  },
   getImports: function getImports() {
     return UI.imports.join('\n');
   },
-  addImportStatement: function addImportStatement(name) {
-    // Capitialize the first character for React.
+  generateImportStatement: function generateImportStatement(name) {
     var Uppercase = name[0].toUpperCase();
     name = Uppercase + name.substring(1, name.length);
-
     var importStatement = 'import ' + name + ' from \'./ui/' + name + '\';';
     var clearCache = 'delete require.cache[require.resolve("./ui/' + name + '")];';
+    return { importStatement: importStatement, clearCache: clearCache };
+  },
+  addImportStatement: function addImportStatement(name) {
+    var _UI$generateImportSta = UI.generateImportStatement(name);
+
+    var importStatement = _UI$generateImportSta.importStatement;
+    var clearCache = _UI$generateImportSta.clearCache;
 
     if (UI.imports.indexOf(importStatement) === -1) {
       UI.imports.push(importStatement);
@@ -81,13 +94,30 @@ var UI = {
       UI.clearCache.push(clearCache);
     }
   },
+  removeImportStatement: function removeImportStatement(name) {
+    var _UI$generateImportSta2 = UI.generateImportStatement(name);
+
+    var importStatement = _UI$generateImportSta2.importStatement;
+    var clearCache = _UI$generateImportSta2.clearCache;
+
+    var pos = undefined;
+    pos = UI.imports.indexOf(importStatement);
+    if (pos !== -1) {
+      UI.imports.splice(pos, 1);
+    }
+
+    pos = UI.clearCache.indexOf(clearCache);
+    if (pos === -1) {
+      UI.clearCache.splice(pos, 1);
+    }
+  },
   compile: function compile(name) {
     UI.compileReactComponent(name);
     UI.compileStylesheet(name);
 
     UI.addImportStatement(name);
 
-    Log.mention('UI Component `' + name + '` is compiled!');
+    Log.success('UI Component `' + name + '` is compiled!');
 
     // Recompile pages that are using this ui component.
     var relations = _relations2.default.getUIRelations(name);
@@ -113,7 +143,7 @@ var UI = {
     });
 
     // Store in cache.
-    _cache2.default.store('ui/' + name, 'index.js', compiled.code);
+    _cache2.default.store(_path2.default.join('ui', name, 'index.js'), compiled.code);
   },
   compileStylesheet: function compileStylesheet(name) {
     var path = _path2.default.join(UI.path, name, 'style.scss');
@@ -130,7 +160,7 @@ var UI = {
     }).css.toString();
 
     // Store in cache.
-    _cache2.default.store('ui/' + name, 'style.css', css);
+    _cache2.default.store(_path2.default.join('ui', name, 'style.css'), css);
   }
 };
 

@@ -1,3 +1,4 @@
+#! /usr/bin/env node
 'use strict';
 
 Object.defineProperty(exports, "__esModule", {
@@ -37,6 +38,10 @@ var _component = require('./component');
 
 var _component2 = _interopRequireDefault(_component);
 
+var _package = require('../package.json');
+
+var _package2 = _interopRequireDefault(_package);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -45,12 +50,21 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var Log = _logger2.default.level('Telescope');
 
-// Compile all the UI elements.
+// Welcome message
 
 // Logging.
-Log.mention('Starting...');
+var welcome = function welcome(next) {
+  Log.note('Welcome!');
+  next();
+};
 
-_async2.default.series([_config2.default.load,
+var leave = function leave() {
+  Log.note('Thank you for using Telescope.');
+  Log.note('Have an awesome day!');
+};
+
+_async2.default.series([welcome,
+// Config.load,
 
 // Watch ui components.
 _watcher2.default.watchUI,
@@ -71,6 +85,7 @@ process.on('SIGINT', function () {
 
 process.on('exit', function () {
   _cache2.default.destroy();
+  leave();
 });
 
 exports.default = {};

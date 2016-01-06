@@ -5,8 +5,9 @@ let Tags = {
   log: ['Log', 'green'],
   error: ['Error', 'red'],
   mention: ['Mention', 'gray'],
-  success: ['Success', 'green'],
-  alert: ['Alert', 'yellow']
+  success: ['Success', 'gray'],
+  alert: ['Alert', 'yellow'],
+  note: ['Note', 'cyan']
 };
 
 export {Tags};

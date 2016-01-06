@@ -16,17 +16,9 @@ var _config = require('./config');
 
 var _config2 = _interopRequireDefault(_config);
 
-var _gulp = require('gulp');
-
-var _gulp2 = _interopRequireDefault(_gulp);
-
 var _through = require('through2');
 
 var _through2 = _interopRequireDefault(_through);
-
-var _gulpBabel = require('gulp-babel');
-
-var _gulpBabel2 = _interopRequireDefault(_gulpBabel);
 
 var _react = require('react');
 
@@ -60,6 +52,14 @@ var _compiler = require('./compiler');
 
 var _compiler2 = _interopRequireDefault(_compiler);
 
+var _relations = require('./relations');
+
+var _relations2 = _interopRequireDefault(_relations);
+
+var _dist = require('./dist');
+
+var _dist2 = _interopRequireDefault(_dist);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -86,12 +86,18 @@ var Pages = {
       waiter();
     }
   },
+  removePage: function removePage(name) {
+    _relations2.default.removePage(name);
+
+    _dist2.default.remove(name);
+
+    Log.mention('Page `' + name + '` is removed!');
+  },
   waitUntilInitialReadIsDone: function waitUntilInitialReadIsDone(next) {
     Pages.initialReadWaiter = next;
   },
   compile: function compile(name) {
     _compiler2.default.compile(name);
-    Log.mention('Compiling page: ', name);
   }
 };
 

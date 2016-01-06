@@ -52,6 +52,10 @@ var _relations = require('./relations');
 
 var _relations2 = _interopRequireDefault(_relations);
 
+var _dist = require('./dist');
+
+var _dist2 = _interopRequireDefault(_dist);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -96,7 +100,7 @@ var Compiler = {
 
     // Store the file.
     Compiler.store], function () {
-      Log.success('Compiled page ', LivePage.name);
+      Log.success('Compiled page:', LivePage.name);
 
       LivePage = undefined;
       Compiler.execute();
@@ -152,7 +156,7 @@ var Compiler = {
     var tempFilename = (0, _uid2.default)() + '.tmp';
 
     // Store the content in a temporary file.
-    var path = _cache2.default.store(undefined, tempFilename, LivePage.content);
+    var path = _cache2.default.store(tempFilename, LivePage.content);
 
     // Reload the content from the temporary file.
     // We write the content to a file and required it here
@@ -167,7 +171,7 @@ var Compiler = {
       return;
     }
     // Remove the temporary file.
-    _cache2.default.remove(undefined, tempFilename);
+    _cache2.default.remove(tempFilename);
 
     // Create the react Element from the Page component.
     var element = undefined;
@@ -244,12 +248,8 @@ var Compiler = {
     next();
   },
   store: function store(next) {
-    var path = _path2.default.join(process.cwd(), 'dist', LivePage.name);
-
-    _fsExtra2.default.mkdirsSync(path);
-
-    _fsExtra2.default.writeFileSync(_path2.default.join(path, 'index.html'), LivePage.content);
-    _fsExtra2.default.writeFileSync(_path2.default.join(path, 'style.css'), LivePage.stylesheet);
+    _dist2.default.store(_path2.default.join(LivePage.name, 'index.html'), LivePage.content);
+    _dist2.default.store(_path2.default.join(LivePage.name, 'style.css'), LivePage.stylesheet);
 
     next();
   }

@@ -37,17 +37,29 @@ let UI = {
     UI.initialReadWaiter = next;
   },
 
+  removeComponent(name){
+    UI.removeImportStatement(name);
+    Relations.removeUIComponent(name);
+
+    Cache.remove('ui/'+name);
+
+    Log.success('UI component `' + name + '` is removed!');
+  },
+
   getImports(){
     return UI.imports.join('\n');
   },
 
-  addImportStatement(name){
-    // Capitialize the first character for React.
+  generateImportStatement(name){
     let Uppercase = name[0].toUpperCase();
     name = Uppercase + name.substring(1, name.length);
-    
     let importStatement = `import ${name} from './ui/${name}';`;
     let clearCache = `delete require.cache[require.resolve("./ui/${name}")];`;
+    return {importStatement, clearCache};
+  },
+
+  addImportStatement(name){
+    let {importStatement, clearCache} = UI.generateImportStatement(name);
 
     if(UI.imports.indexOf(importStatement) === -1){
       UI.imports.push(importStatement);
@@ -57,13 +69,28 @@ let UI = {
     }
   },
 
+  removeImportStatement(name){
+   let {importStatement, clearCache} = UI.generateImportStatement(name);
+    
+    let pos;
+    pos = UI.imports.indexOf(importStatement);
+    if(pos !== -1){
+      UI.imports.splice(pos, 1);
+    }
+
+    pos = UI.clearCache.indexOf(clearCache);
+    if(pos === -1){
+      UI.clearCache.splice(pos, 1);
+    }
+  },
+
   compile(name){
     UI.compileReactComponent(name);
     UI.compileStylesheet(name);
 
     UI.addImportStatement(name);
 
-    Log.mention('UI Component `'+name+'` is compiled!');
+    Log.success('UI Component `'+name+'` is compiled!');
 
     // Recompile pages that are using this ui component.
     let relations = Relations.getUIRelations(name); 
@@ -90,7 +117,7 @@ let UI = {
     });
 
     // Store in cache.
-    Cache.store('ui/'+name, 'index.js', compiled.code);
+    Cache.store(Path.join('ui',name,'index.js') , compiled.code);
   },
 
   compileStylesheet(name){
@@ -108,7 +135,7 @@ let UI = {
     }).css.toString();
 
     // Store in cache.
-    Cache.store('ui/'+name, 'style.css', css);
+    Cache.store(Path.join('ui',name, 'style.css'), css);
   }
 
 };

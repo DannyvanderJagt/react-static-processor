@@ -1,15 +1,35 @@
 import Livereload from 'livereload';
+import Express from 'express';
+import Path from 'path';
+import ServeIndex from 'serve-index';
 
 import Logger from './logger';
 let Log = Logger.level('Server');
 
 let Server = {
-  instance: undefined,
-  start(next){
-    Server.instance = Livereload.createServer();
-    Server.instance.watch(process.cwd() + "/dist");
+  livereload: undefined,
+  server: undefined,
+  app: undefined, 
 
-    Log.log('The server is listening for changes.');
+  start(next){
+    let path = Path.join(process.cwd() , 'dist');
+    
+    // Express server.
+    Server.app = Express();
+
+    // Middleware.
+    Server.app.use(Express.static(path));
+    Server.app.use(ServeIndex(path, {'icons': true}));
+
+    Server.server = Server.app.listen(4000, () => {
+      let port = Server.server.address().port;
+      Log.note('The server is available at: http://localhost:' + port);
+    });
+
+    // Live reload server.
+    Server.livereload = Livereload.createServer();
+    Server.livereload.watch(path);
+    Log.note('The server is listening for changes.');
 
     next();
   }

@@ -12,6 +12,45 @@ let Relations = {
     return Relations.ui[name] || [];
   },
 
+  removeUIComponent(name){
+    name = name.toLowerCase();
+
+    if(Relations.ui[name]){
+      delete Relations.ui[name];
+    }
+
+    let pages = Object.keys(Relations.pages); 
+    let pos;
+
+    pages.forEach((page) => {
+      pos = Relations.pages[page].indexOf(name);
+      if(pos === -1){ 
+        return;
+      }
+      Relations.pages[page].splice(pos, 1);
+    });
+
+  },
+
+  removePage(name){
+    name = name.toLowerCase();
+
+    if(Relations.pages[name]){
+      delete Relations.pages[name];
+    }
+
+    let components = Object.keys(Relations.ui); 
+    let pos;
+
+    components.forEach((component) => {
+      pos = Relations.ui[component].indexOf(name);
+      if(pos === -1){ 
+        return;
+      }
+      Relations.ui[component].splice(pos, 1);
+    });
+  },
+
   setPageComponents(pageName, components){
     // Get the difference.
     let old = Relations.pages[pageName] || [];

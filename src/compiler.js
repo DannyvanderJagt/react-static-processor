@@ -11,6 +11,7 @@ import UI from './ui';
 import Runtime from './runtime';
 import Cache from './cache';
 import Relations from './relations';
+import Dist from './dist';
 
 // Babel has to be load the old fashion way!
 const Babel = require('babel-core');
@@ -68,7 +69,7 @@ let Compiler = {
       // Store the file.
       Compiler.store
     ], () => {
-      Log.success('Compiled page ', LivePage.name);
+      Log.success('Compiled page:', LivePage.name);
 
       LivePage = undefined;
       Compiler.execute();
@@ -141,7 +142,7 @@ let Compiler = {
     let tempFilename = Uid() + '.tmp';
 
     // Store the content in a temporary file.
-    let path = Cache.store(undefined, tempFilename, LivePage.content);
+    let path = Cache.store(tempFilename, LivePage.content);
 
     // Reload the content from the temporary file.
     // We write the content to a file and required it here
@@ -156,7 +157,7 @@ let Compiler = {
       return;
     }
     // Remove the temporary file.
-    Cache.remove(undefined, tempFilename);
+    Cache.remove(tempFilename);
 
     // Create the react Element from the Page component.
     let element;
@@ -255,13 +256,9 @@ let Compiler = {
   },
 
   store(next){
-    let path = Path.join(process.cwd(), 'dist', LivePage.name);
-
-    Fs.mkdirsSync(path);
-
-    Fs.writeFileSync(Path.join(path, 'index.html'), LivePage.content);
-    Fs.writeFileSync(Path.join(path, 'style.css'), LivePage.stylesheet);
-
+    Dist.store(Path.join(LivePage.name, 'index.html'), LivePage.content);
+    Dist.store(Path.join(LivePage.name, 'style.css'), LivePage.stylesheet);
+    
     next();
   }
   

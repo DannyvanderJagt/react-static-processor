@@ -16,6 +16,42 @@ var Relations = {
   getUIRelations: function getUIRelations(name) {
     return Relations.ui[name] || [];
   },
+  removeUIComponent: function removeUIComponent(name) {
+    name = name.toLowerCase();
+
+    if (Relations.ui[name]) {
+      delete Relations.ui[name];
+    }
+
+    var pages = Object.keys(Relations.pages);
+    var pos = undefined;
+
+    pages.forEach(function (page) {
+      pos = Relations.pages[page].indexOf(name);
+      if (pos === -1) {
+        return;
+      }
+      Relations.pages[page].splice(pos, 1);
+    });
+  },
+  removePage: function removePage(name) {
+    name = name.toLowerCase();
+
+    if (Relations.pages[name]) {
+      delete Relations.pages[name];
+    }
+
+    var components = Object.keys(Relations.ui);
+    var pos = undefined;
+
+    components.forEach(function (component) {
+      pos = Relations.ui[component].indexOf(name);
+      if (pos === -1) {
+        return;
+      }
+      Relations.ui[component].splice(pos, 1);
+    });
+  },
   setPageComponents: function setPageComponents(pageName, components) {
     // Get the difference.
     var old = Relations.pages[pageName] || [];

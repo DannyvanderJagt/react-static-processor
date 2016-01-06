@@ -70,6 +70,12 @@ var Watcher = {
     }
 
     var componentName = arrPath[1];
+
+    if (event === 'unlink' && _path2.default.extname(path) === '.js') {
+      _ui2.default.removeComponent(componentName);
+      return;
+    }
+
     _ui2.default.compile(componentName);
   },
 
@@ -105,6 +111,11 @@ var Watcher = {
 
     // Remove the extention.
     componentName = componentName.replace('.tmpl', '');
+
+    if (event === 'unlink') {
+      _pages2.default.removePage(componentName);
+      return;
+    }
 
     _pages2.default.compile(componentName);
   }
