@@ -5,8 +5,12 @@ import Cache from './cache';
 import Pages from './pages';
 import Server from './server';
 import Watcher from './watcher';
-import Component from './component';
 import Pkg from '../package.json';
+
+// Import doesn't work when used in 
+// a UI component because 
+// of the .default added by babel.
+const Component = require('./component');
 
 // Logging.
 import Logger from './logger';
@@ -24,6 +28,7 @@ var leave = () => {
 };
 
 var Telescope = {
+  Component: Component,
   start(){  
     Async.series([
       welcome,

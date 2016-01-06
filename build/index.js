@@ -33,10 +33,6 @@ var _watcher = require('./watcher');
 
 var _watcher2 = _interopRequireDefault(_watcher);
 
-var _component = require('./component');
-
-var _component2 = _interopRequireDefault(_component);
-
 var _package = require('../package.json');
 
 var _package2 = _interopRequireDefault(_package);
@@ -47,11 +43,16 @@ var _logger2 = _interopRequireDefault(_logger);
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+// Import doesn't work when used in
+// a UI component because
+// of the .default added by babel.
+var Component = require('./component');
+
+// Logging.
+
 var Log = _logger2.default.level('Telescope');
 
 // Welcome message
-
-// Logging.
 var welcome = function welcome(next) {
   Log.note('Welcome!');
   next();
@@ -63,6 +64,7 @@ var leave = function leave() {
 };
 
 var Telescope = {
+  Component: Component,
   start: function start() {
     _async2.default.series([welcome,
     // Config.load,
@@ -93,9 +95,9 @@ process.on('exit', function () {
 
 // Support import es2015.
 exports.default = Telescope;
-exports.Component = _component2.default;
+exports.Component = Component;
 
 // Support require es5.
 
 module.exports = Telescope;
-exports.Component = _component2.default;
+exports.Component = Component;

@@ -12,3 +12,4 @@ class Component extends React.Component{
 };
 
 export default Component;
+module.exports = Component;

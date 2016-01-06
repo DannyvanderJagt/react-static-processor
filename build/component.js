@@ -41,3 +41,5 @@ var Component = (function (_React$Component) {
 ;
 
 exports.default = Component;
+
+module.exports = Component;
