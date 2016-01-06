@@ -63,7 +63,7 @@ let Watcher = {
 
   // Pages.
   watchPages(next){
-    Watcher.pages = Chokidar.watch('pages/*.*', {
+    Watcher.pages = Chokidar.watch('pages/**/*.*', {
       ignoreInitial: false, 
       cwd: process.cwd(), 
       ignored: /[\/\\]\./
@@ -94,6 +94,12 @@ let Watcher = {
   },
   
   onPage(event, path){
+    // On initial read we only compile
+    // when an .js file is found.
+    if(Pages.initialRead === false && Path.extname(path) !== '.tmpl'){
+      return;
+    } 
+
     // Get the component file name.
     let arrPath = path.split('/');
     if(!arrPath[1]){ return; }

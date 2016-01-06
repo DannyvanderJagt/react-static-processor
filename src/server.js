@@ -28,7 +28,6 @@ let Server = {
       let keys = Object.keys(Config.data.server);
       
       keys.forEach((key) => {
-        console.log(key, Config.data.server[key]);
         Server.app.use(key, Express.static(Config.data.server[key]));
       });
     }

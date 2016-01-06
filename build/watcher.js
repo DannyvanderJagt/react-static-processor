@@ -90,7 +90,7 @@ var Watcher = {
 
   // Pages.
   watchPages: function watchPages(next) {
-    Watcher.pages = _chokidar2.default.watch('pages/*.*', {
+    Watcher.pages = _chokidar2.default.watch('pages/**/*.*', {
       ignoreInitial: false,
       cwd: process.cwd(),
       ignored: /[\/\\]\./
@@ -115,6 +115,12 @@ var Watcher = {
     Log.alert('Stopped watching pages...');
   },
   onPage: function onPage(event, path) {
+    // On initial read we only compile
+    // when an .js file is found.
+    if (_pages2.default.initialRead === false && _path2.default.extname(path) !== '.tmpl') {
+      return;
+    }
+
     // Get the component file name.
     var arrPath = path.split('/');
     if (!arrPath[1]) {

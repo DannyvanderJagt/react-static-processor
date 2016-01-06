@@ -56,7 +56,6 @@ var Server = {
       var keys = Object.keys(_config2.default.data.server);
 
       keys.forEach(function (key) {
-        console.log(key, _config2.default.data.server[key]);
         Server.app.use(key, _express2.default.static(_config2.default.data.server[key]));
       });
     }

@@ -120,9 +120,9 @@ var Compiler = {
   // Check if the page really exists.
   exists: function exists(next) {
     var name = LivePage.name;
-    var path = _path2.default.join(_pages2.default.path, name) + '.tmpl';
+    var path = _path2.default.join(_pages2.default.path, name);
 
-    if (!_fsExtra2.default.existsSync(path)) {
+    if (!_fsExtra2.default.existsSync(path + '/index.tmpl')) {
       Compiler.abort('The .tmpl file does not exist!');
       return;
     }
@@ -133,7 +133,7 @@ var Compiler = {
   },
   getContent: function getContent(next) {
     try {
-      LivePage.content = _fsExtra2.default.readFileSync(LivePage.path, 'utf-8');
+      LivePage.content = _fsExtra2.default.readFileSync(_path2.default.join(LivePage.path, 'index.tmpl'), 'utf-8');
     } catch (error) {
       Compiler.abort('The file could not be loaded!');
     }
@@ -239,7 +239,7 @@ var Compiler = {
           return;
         }
 
-        if (_path2.default.extname() === '.scss') {
+        if (_path2.default.extname(path) === '.scss') {
           try {
             stylesheets.push(_nodeSass2.default.renderSync({
               file: path
@@ -262,6 +262,16 @@ var Compiler = {
 
       stylesheets.push(_fsExtra2.default.readFileSync(path, 'utf-8'));
     });
+
+    if (_fsExtra2.default.existsSync(_path2.default.join(LivePage.path, 'style.scss'))) {
+      try {
+        stylesheets.push(_nodeSass2.default.renderSync({
+          file: _path2.default.join(LivePage.path, 'style.scss')
+        }).css.toString());
+      } catch (error) {
+        Compiler.abort(error);
+      }
+    }
 
     LivePage.stylesheet = stylesheets.join('');
 

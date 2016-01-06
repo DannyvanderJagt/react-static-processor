@@ -24,7 +24,8 @@ Fields:
 * `server` - Object - Add paths for hosting. Format: {'/assets': 'path/to/assets'}
 
 ## Create a page
-- Create a file with the `.tmpl` extention and place it in the `pages` directory.
+- Create a directory in the pages directory.
+- Add a file with the `.tmpl` extention.
 - Write some html and use React Components.
 
 ## Create a UI Component / React Component

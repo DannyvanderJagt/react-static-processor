@@ -83,9 +83,9 @@ let Compiler = {
   // Check if the page really exists.
   exists(next){
     let name = LivePage.name;
-    let path = Path.join(Pages.path, name) + '.tmpl';
+    let path = Path.join(Pages.path, name);
 
-    if(!Fs.existsSync(path)){
+    if(!Fs.existsSync(path + '/index.tmpl')){
       Compiler.abort('The .tmpl file does not exist!');
       return;
     }
@@ -97,7 +97,7 @@ let Compiler = {
 
   getContent(next){
     try{
-      LivePage.content = Fs.readFileSync(LivePage.path, 'utf-8');
+      LivePage.content = Fs.readFileSync(Path.join(LivePage.path, 'index.tmpl'), 'utf-8');
     }catch(error){
       Compiler.abort('The file could not be loaded!')
     }
@@ -220,8 +220,8 @@ let Compiler = {
         if(!Fs.existsSync(path)){
           return;
         }
-
-        if(Path.extname() === '.scss'){
+        
+        if(Path.extname(path) === '.scss'){
           try{
             stylesheets.push(
               Sass.renderSync({
@@ -250,6 +250,18 @@ let Compiler = {
         Fs.readFileSync(path, 'utf-8')
       );
     });
+
+    if(Fs.existsSync(Path.join(LivePage.path, 'style.scss'))){
+      try{
+        stylesheets.push(
+          Sass.renderSync({
+            file: Path.join(LivePage.path, 'style.scss')
+          }).css.toString()
+        )
+      }catch(error){
+        Compiler.abort(error);
+      }
+    }
 
     LivePage.stylesheet = stylesheets.join('');
 
