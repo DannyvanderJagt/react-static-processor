@@ -1,7 +1,9 @@
 import Livereload from 'livereload';
 import Express from 'express';
 import Path from 'path';
+import Util from 'util';
 import ServeIndex from 'serve-index';
+import Config from './config';
 
 import Logger from './logger';
 let Log = Logger.level('Server');
@@ -20,6 +22,13 @@ let Server = {
     // Middleware.
     Server.app.use(Express.static(path));
     Server.app.use(ServeIndex(path, {'icons': true}));
+
+    // Config.
+    if(Config.data.server && Util.isArray(Config.data.server)){
+      Config.data.server.forEach((path) => {
+        Server.app.use(Express.static(path));
+      });
+    }
 
     Server.server = Server.app.listen(4000, () => {
       let port = Server.server.address().port;

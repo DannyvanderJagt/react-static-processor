@@ -16,9 +16,17 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
+
 var _serveIndex = require('serve-index');
 
 var _serveIndex2 = _interopRequireDefault(_serveIndex);
+
+var _config = require('./config');
+
+var _config2 = _interopRequireDefault(_config);
 
 var _logger = require('./logger');
 
@@ -42,6 +50,13 @@ var Server = {
     // Middleware.
     Server.app.use(_express2.default.static(path));
     Server.app.use((0, _serveIndex2.default)(path, { 'icons': true }));
+
+    // Config.
+    if (_config2.default.data.server && _util2.default.isArray(_config2.default.data.server)) {
+      _config2.default.data.server.forEach(function (path) {
+        Server.app.use(_express2.default.static(path));
+      });
+    }
 
     Server.server = Server.app.listen(4000, function () {
       var port = Server.server.address().port;
