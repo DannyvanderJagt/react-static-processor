@@ -1,5 +1,6 @@
 import Fs from 'fs';
 import Path from 'path';
+import Util from 'util';
 
 // Logging...
 import Logger from './logger';
@@ -27,7 +28,9 @@ let Config = {
 
     Log.success('The telescope.config.js is loaded!');
 
-    next();
+    if(next && Util.isFunction(next)){
+      next();
+    }
   }
 }
 

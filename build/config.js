@@ -12,6 +12,10 @@ var _path = require('path');
 
 var _path2 = _interopRequireDefault(_path);
 
+var _util = require('util');
+
+var _util2 = _interopRequireDefault(_util);
+
 var _logger = require('./logger');
 
 var _logger2 = _interopRequireDefault(_logger);
@@ -44,7 +48,9 @@ var Config = {
 
     Log.success('The telescope.config.js is loaded!');
 
-    next();
+    if (next && _util2.default.isFunction(next)) {
+      next();
+    }
   }
 };
 
