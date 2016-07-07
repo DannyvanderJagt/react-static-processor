@@ -1,4 +1,4 @@
-# Telescope
+# React Static Processor
 Write html, create and use React components and output plain html and css!
 
 
